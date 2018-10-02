@@ -39,7 +39,7 @@ func OofCount(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if !check {
 		return
 	}
-	guild, err := f.GetGuild(s, m.Message)
+	server, err := f.GetGuild(s, m.Message)
 	if err != nil {
 		dat.Log.Println(err)
 		return
@@ -53,13 +53,15 @@ func OofCount(s *discordgo.Session, m *discordgo.MessageCreate) {
 			ReplyFrequency int            `json:"replyfrequency"`
 		})
 	}
-	/*if myConfig.Guild[guild.ID].OofCount == nil {
-		myConfig.Guild[guild.ID].OofCount = make(map[string]int)
-	}*/
-	myConfig.Guild[guild.ID].OofCount[m.Message.Author.ID]++
-	myConfig.Guild[guild.ID].TotalOofs++
+	guildOofs := myConfig.Guild[server.ID]
+	if guildOofs.OofCount == nil {
+		guildOofs.OofCount = make(map[string]int)
+	}
+	guildOofs.OofCount[m.Message.Author.ID]++
+	guildOofs.TotalOofs++
+	myConfig.Guild[server.ID] = guildOofs
 	dat.Save("oof/myConfig.json", &myConfig)
-	for _, channel := range myConfig.Guild[guild.ID].BlChans {
+	for _, channel := range guildOofs.BlChans {
 		if channel == m.Message.ChannelID {
 			return
 		}
@@ -70,16 +72,16 @@ func OofCount(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	if !check {
-		if myConfig.Guild[guild.ID].ReplyFrequency == 0 {
-			myConfig.Guild[guild.ID].ReplyFrequency = 100
+		if guildOofs.ReplyFrequency == 0 {
+			guildOofs.ReplyFrequency = 100
 		}
 		rand.Seed(time.Now().UnixNano())
 		number := rand.Intn(1000)
-		if number <= myConfig.Guild[guild.ID].ReplyFrequency {
+		if number <= guildOofs.ReplyFrequency {
 			s.ChannelMessageSend(m.Message.ChannelID, fmt.Sprintf("**oof** indeed! You've oof'd %d times! Thats %f% of all oofs in the server (%d) since I started counting at Epoch %v",
-				myConfig.Guild[guild.ID].OofCount[m.Message.Author.ID],
-				(100*(myConfig.Guild[guild.ID].OofCount[m.Message.Author.ID]/myConfig.Guild[guild.ID].TotalOofs)),
-				myConfig.Guild[guild.ID].Epoch.Format("Mon, 2 Jan 2006 at 15:04.")))
+				guildOofs.OofCount[m.Message.Author.ID],
+				(100*(guildOofs.OofCount[m.Message.Author.ID]/guildOofs.TotalOofs)),
+				guildOofs.Epoch.Format("Mon, 2 Jan 2006 at 15:04.")))
 		}
 	}
 }

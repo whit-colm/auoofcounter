@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if [ ! -d "./bin" ] ; then mkdir bin ; fi
+env CGO_ENABLED=1 GO111MODULE=on go build -buildmode=plugin -v -o ./bin/oofcounter.so ./src/main.go
+if [ "$?" -ne "0" ] ; then exit 1 ; rm -rf ./bin ; else echo "Compiled plugin to bin. Move \"`ls bin`\" into a bots plugin dir to use." ; fi

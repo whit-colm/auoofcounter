@@ -74,13 +74,13 @@ func OofCount(s *discordgo.Session, m *discordgo.MessageCreate) {
 	guildOofs.OofCount[m.Message.Author.ID]++
 	guildOofs.TotalOofs++
 	myConfig.Guild[server.ID] = guildOofs
-	dat.Save("oofcounter/config.json", &myConfig)
+	dat.Save("oofcounter/myconfig.json", &myConfig)
 	for _, channel := range guildOofs.BlChans {
 		if channel == m.Message.ChannelID {
 			return
 		}
 	}
-	check, err = regexp.MatchString("[A-z]+oof|oof[A-z]+|"+f.Config.Prefix+"oof", m.Message.Content)
+	check, err = regexp.MatchString("[A-z]+oof|oof[A-z]+|^[\\W<@]+oof", m.Message.Content)
 	if err != nil {
 		dat.Log.Println(err)
 		return
@@ -112,25 +112,5 @@ func readOofs(session *discordgo.Session, message *discordgo.Message, guildOofs 
 }
 
 func oof(session *discordgo.Session, message *discordgo.Message) {
-	server, err := f.GetGuild(session, message)
-	if err != nil {
-		dat.AlertDiscord(session, message, err)
-		dat.Log.Println(err)
-		return
-	}
-	if myConfig.Guild == nil {
-		session.ChannelMessageSend(message.ChannelID, "Nobody has oof'd anywhere! Try oofing?")
-		return
-	}
-	guildOofs := myConfig.Guild[server.ID]
-	oofPercent := float64(100) * (float64(guildOofs.OofCount[message.Author.ID]) / float64(guildOofs.TotalOofs))
-	session.ChannelMessageSend(message.ChannelID, fmt.Sprintf("**oof** indeed! You've oof'd %d times! Thats %f%% of all oofs in the server (%d) since I started counting at Epoch %v",
-		guildOofs.OofCount[message.Author.ID],
-		oofPercent,
-		guildOofs.TotalOofs,
-		guildOofs.Epoch.Format("Mon, 2 Jan 2006 at 15:04.")))
+
 }
-
-//func blacklistOofs(session *discordgo.Session, message *discordgo.Message) {
-
-//}

@@ -74,13 +74,21 @@ func OofCount(s *discordgo.Session, m *discordgo.MessageCreate) {
 	guildOofs.OofCount[m.Message.Author.ID]++
 	guildOofs.TotalOofs++
 	myConfig.Guild[server.ID] = guildOofs
+<<<<<<< HEAD
 	dat.Save("oofcounter/config.json", &myConfig)
+=======
+	dat.Save("oofcounter/myconfig.json", &myConfig)
+>>>>>>> 3742c1c09d0f82a9fe6898de3adf7cbb2e0b5d94
 	for _, channel := range guildOofs.BlChans {
 		if channel == m.Message.ChannelID {
 			return
 		}
 	}
+<<<<<<< HEAD
 	check, err = regexp.MatchString("[A-z]+oof|oof[A-z]+|"+f.Config.Prefix+"oof", m.Message.Content)
+=======
+	check, err = regexp.MatchString("[A-z]+oof|oof[A-z]+|^[\\W<@]+oof", m.Message.Content)
+>>>>>>> 3742c1c09d0f82a9fe6898de3adf7cbb2e0b5d94
 	if err != nil {
 		dat.Log.Println(err)
 		return
@@ -93,7 +101,11 @@ func OofCount(s *discordgo.Session, m *discordgo.MessageCreate) {
 		number := rand.Intn(1000)
 		if number <= guildOofs.ReplyFrequency {
 			oofPercent := float64(100) * (float64(guildOofs.OofCount[m.Message.Author.ID]) / float64(guildOofs.TotalOofs))
+<<<<<<< HEAD
+			s.ChannelMessageSend(m.Message.ChannelID, fmt.Sprintf("**oof** indeed! You've oof'd %d times! Thats %f%% of all oofs in the server (%d) since I started counting at Epoch %v",
+=======
 			s.ChannelMessageSend(m.Message.ChannelID, fmt.Sprintf("**oof** indeed! You've oof'd %d times! Thats %.2f%% of all oofs in the server (%d) since I started counting at %v",
+>>>>>>> 3742c1c09d0f82a9fe6898de3adf7cbb2e0b5d94
 				guildOofs.OofCount[m.Message.Author.ID],
 				oofPercent,
 				guildOofs.TotalOofs,
@@ -112,6 +124,7 @@ func readOofs(session *discordgo.Session, message *discordgo.Message, guildOofs 
 }
 
 func oof(session *discordgo.Session, message *discordgo.Message) {
+<<<<<<< HEAD
 	server, err := f.GetGuild(session, message)
 	if err != nil {
 		dat.AlertDiscord(session, message, err)
@@ -129,6 +142,9 @@ func oof(session *discordgo.Session, message *discordgo.Message) {
 		oofPercent,
 		guildOofs.TotalOofs,
 		guildOofs.Epoch.Format("Mon, 2 Jan 2006 at 15:04.")))
+=======
+
+>>>>>>> 3742c1c09d0f82a9fe6898de3adf7cbb2e0b5d94
 }
 
 //func blacklistOofs(session *discordgo.Session, message *discordgo.Message) {

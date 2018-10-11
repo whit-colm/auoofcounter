@@ -30,10 +30,10 @@ func init() {
 	}
 	defer f.Session.AddHandler(OofCount)
 	Commands["oof"] = &f.Command{
-		Name:    "Tallies the actor's `oof`s.",
-		Help:    `oof gives tallies out how many times the actor has oof'd in the server.`,
+		Name:    "oof",
+		Help:    "oof",
 		Perms:   -1,
-		Version: "v1.0",
+		Version: "oof",
 		Action:  oof,
 	}
 }
@@ -65,9 +65,7 @@ func OofCount(s *discordgo.Session, m *discordgo.MessageCreate) {
 		})
 	}
 	guildOofs := myConfig.Guild[server.ID]
-	if guildOofs.Epoch == nil {
-		guildOofs.Epoch = time.Now()
-	}
+	guildOofs.Epoch = time.Now()
 	if guildOofs.OofCount == nil {
 		guildOofs.OofCount = make(map[string]int)
 	}
@@ -93,22 +91,13 @@ func OofCount(s *discordgo.Session, m *discordgo.MessageCreate) {
 		number := rand.Intn(1000)
 		if number <= guildOofs.ReplyFrequency {
 			oofPercent := float64(100) * (float64(guildOofs.OofCount[m.Message.Author.ID]) / float64(guildOofs.TotalOofs))
-			s.ChannelMessageSend(m.Message.ChannelID, fmt.Sprintf("**oof** indeed! You've oof'd %d times! Thats %.2f%% of all oofs in the server (%d) since I started counting at %v",
+			s.ChannelMessageSend(m.Message.ChannelID, fmt.Sprintf("**oof** indeed! You've oof'd %d times! Thats %f%% of all oofs in the server (%d) since I started counting at Epoch %v",
 				guildOofs.OofCount[m.Message.Author.ID],
 				oofPercent,
 				guildOofs.TotalOofs,
 				guildOofs.Epoch.Format("Mon, 2 Jan 2006 at 15:04.")))
 		}
 	}
-}
-
-func readOofs(session *discordgo.Session, message *discordgo.Message, guildOofs struct{}) {
-	oofPercent := float64(100) * (float64(guildOofs.OofCount[m.Message.Author.ID]) / float64(guildOofs.TotalOofs))
-	s.ChannelMessageSend(m.Message.ChannelID, fmt.Sprintf("**oof** indeed! You've oof'd %d times! Thats %.2f%% of all oofs in the server (%d) since I started counting at %v",
-		guildOofs.OofCount[m.Message.Author.ID],
-		oofPercent,
-		guildOofs.TotalOofs,
-		guildOofs.Epoch.Format("Mon, 2 Jan 2006 at 15:04.")))
 }
 
 func oof(session *discordgo.Session, message *discordgo.Message) {

@@ -11,16 +11,16 @@ import (
 )
 
 type Config struct {
-	Guild map[string]struct {
-		Epoch          time.Time      `json:"epoch"`
-		OofCount       map[string]int `json:"oofcount"`
-		BlChans        []string       `json:"blacklist"`
-		TotalOofs      int            `json:"totaloofs"`
-		ReplyFrequency int            `json:"replyfrequency"`
-	} `json:"guild"`
+	OofCount       map[string]int `json:"oofcount"`
+	BlChans        []string       `json:"blacklist"`
+	TotalOofs      int            `json:"totaloofs"`
+	ReplyFrequency int            `json:"replyfrequency"`
 }
 
-var myConfig Config
+var myConfig struct {
+	Guild map[string]Config `json:"guild"`
+}
+
 var Commands = make(map[string]*f.Command)
 
 func init() {
@@ -56,18 +56,9 @@ func OofCount(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	if myConfig.Guild == nil {
-		myConfig.Guild = make(map[string]struct {
-			Epoch          time.Time      `json:"epoch"`
-			OofCount       map[string]int `json:"oofcount"`
-			BlChans        []string       `json:"blacklist"`
-			TotalOofs      int            `json:"totaloofs"`
-			ReplyFrequency int            `json:"replyfrequency"`
-		})
+		myConfig.Guild = make(map[string]Config)
 	}
 	guildOofs := myConfig.Guild[server.ID]
-	if guildOofs.Epoch == nil {
-		guildOofs.Epoch = time.Now()
-	}
 	if guildOofs.OofCount == nil {
 		guildOofs.OofCount = make(map[string]int)
 	}
@@ -92,23 +83,17 @@ func OofCount(s *discordgo.Session, m *discordgo.MessageCreate) {
 		rand.Seed(time.Now().UnixNano())
 		number := rand.Intn(1000)
 		if number <= guildOofs.ReplyFrequency {
-			oofPercent := float64(100) * (float64(guildOofs.OofCount[m.Message.Author.ID]) / float64(guildOofs.TotalOofs))
-			s.ChannelMessageSend(m.Message.ChannelID, fmt.Sprintf("**oof** indeed! You've oof'd %d times! Thats %.2f%% of all oofs in the server (%d) since I started counting at %v",
-				guildOofs.OofCount[m.Message.Author.ID],
-				oofPercent,
-				guildOofs.TotalOofs,
-				guildOofs.Epoch.Format("Mon, 2 Jan 2006 at 15:04.")))
+			readOofs(s, m.Message, guildOofs)
 		}
 	}
 }
 
-func readOofs(session *discordgo.Session, message *discordgo.Message, guildOofs struct{}) {
-	oofPercent := float64(100) * (float64(guildOofs.OofCount[m.Message.Author.ID]) / float64(guildOofs.TotalOofs))
-	s.ChannelMessageSend(m.Message.ChannelID, fmt.Sprintf("**oof** indeed! You've oof'd %d times! Thats %.2f%% of all oofs in the server (%d) since I started counting at %v",
-		guildOofs.OofCount[m.Message.Author.ID],
+func readOofs(s *discordgo.Session, m *discordgo.Message, guildOofs Config) {
+	oofPercent := float64(100) * (float64(guildOofs.OofCount[m.Author.ID]) / float64(guildOofs.TotalOofs))
+	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("**oof** indeed! You've oof'd %d times! Thats %.2f%% of all oofs in the server (%d)!",
+		guildOofs.OofCount[m.Author.ID],
 		oofPercent,
-		guildOofs.TotalOofs,
-		guildOofs.Epoch.Format("Mon, 2 Jan 2006 at 15:04.")))
+		guildOofs.TotalOofs))
 }
 
 func oof(session *discordgo.Session, message *discordgo.Message) {
@@ -123,12 +108,7 @@ func oof(session *discordgo.Session, message *discordgo.Message) {
 		return
 	}
 	guildOofs := myConfig.Guild[server.ID]
-	oofPercent := float64(100) * (float64(guildOofs.OofCount[message.Author.ID]) / float64(guildOofs.TotalOofs))
-	session.ChannelMessageSend(message.ChannelID, fmt.Sprintf("**oof** indeed! You've oof'd %d times! Thats %f%% of all oofs in the server (%d) since I started counting at Epoch %v",
-		guildOofs.OofCount[message.Author.ID],
-		oofPercent,
-		guildOofs.TotalOofs,
-		guildOofs.Epoch.Format("Mon, 2 Jan 2006 at 15:04.")))
+	readOofs(session, message, guildOofs)
 }
 
 //func blacklistOofs(session *discordgo.Session, message *discordgo.Message) {
